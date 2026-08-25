@@ -991,25 +991,33 @@ export function ScratchCard({
 
     hasScratched.current = false;
 
+    // The wrapper div (via `maxWidth: "100%"` + `aspectRatio` in the JSX
+    // below) is what actually shrinks on a narrow viewport -- the canvas
+    // reads its real rendered box here instead of trusting the raw width/
+    // height props, so drawing stays pixel-accurate at any size CSS gives it.
+    const renderRect = canvas.getBoundingClientRect();
+    const renderWidth = renderRect.width;
+    const renderHeight = renderRect.height;
+
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    canvas.width = renderWidth * dpr;
+    canvas.height = renderHeight * dpr;
+    canvas.style.width = `${renderWidth}px`;
+    canvas.style.height = `${renderHeight}px`;
     ctx.scale(dpr, dpr);
 
     ctx.fillStyle = overlayColor;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, renderWidth, renderHeight);
     ctx.font = "600 16px Jost, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,0.85)";
     ctx.textAlign = "center";
-    ctx.fillText("Scratch to reveal", width / 2, height / 2);
+    ctx.fillText("Scratch to reveal", renderWidth / 2, renderHeight / 2);
 
     // Percentage tracking reads from a small downsampled offscreen canvas
     // rather than the full DPR-scaled buffer, so getImageData stays cheap
     // (a few KB instead of several MB) even while actively dragging.
     const sampleWidth = 96;
-    const sampleHeight = Math.max(1, Math.round(sampleWidth * (height / width)));
+    const sampleHeight = Math.max(1, Math.round(sampleWidth * (renderHeight / renderWidth)));
     const sampleCanvas = document.createElement("canvas");
     sampleCanvas.width = sampleWidth;
     sampleCanvas.height = sampleHeight;
@@ -1101,7 +1109,10 @@ export function ScratchCard({
   }, [revealed]);
 
   return (
-    <div className={`relative select-none ${className}`} style={{ width, height }}>
+    <div
+      className={`relative select-none ${className}`}
+      style={{ width, maxWidth: "100%", aspectRatio: `${width} / ${height}` }}
+    >
       <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-ivory p-6 text-center shadow-lg">
         {children}
       </div>
@@ -1110,7 +1121,6 @@ export function ScratchCard({
           <motion.canvas
             ref={canvasRef}
             className="absolute inset-0 touch-none rounded-2xl"
-            style={{ width, height }}
             aria-hidden="true"
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
