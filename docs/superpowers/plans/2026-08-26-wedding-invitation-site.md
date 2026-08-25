@@ -2030,6 +2030,10 @@ Expected: Performance score in the 80s or above (petals/canvas work is deferred 
 Using the Lighthouse Accessibility report (or Chrome DevTools' contrast checker on individual text elements), verify: `text-maroon` on `bg-ivory`, `text-ivory` on `bg-maroon`/`bg-maroon-deep`, and `text-ink/70` on `bg-blush` all meet WCAG AA (4.5:1 for body text).
 Expected: all pass. If `text-ink/70` on `bg-blush` fails (translucent text on a light background is the most likely offender), bump it to `text-ink/80` or `text-ink` in the affected component.
 
+- [ ] **Step 4b: OG image font polish**
+
+`app/opengraph-image.tsx` (Task 7) sets `fontStyle: "italic"` on the couple's names, but Satori's fallback font has no italic face, so it renders upright — a missed brand touch on the single most-seen surface of this site (the WhatsApp link preview). If time allows, embed the actual Cormorant Garamond italic face: fetch the font file bytes (e.g. `fetch('https://fonts.gstatic.com/s/cormorantgaramond/...') ` for the italic weight actually used, or bundle a local `.ttf` under `/public/fonts` and read it with `fs.readFile` — note `runtime = "edge"` in that file restricts filesystem access, so a `fetch` of a public font URL is the more compatible approach) and pass it via `ImageResponse`'s second-argument `fonts: [{ name: "Cormorant Garamond", data: fontData, style: "italic", weight: 600 }]` option. Not a blocker if time is short — the current version is legible and on-brand in color/layout, just not italic.
+
 - [ ] **Step 5: Commit any fixes found above**
 
 ```bash
@@ -2068,6 +2072,26 @@ Guide the user to import the GitHub repo at vercel.com/new; framework preset aut
 - [ ] **Step 4: Add Supabase env vars to Vercel project settings**
 
 In the Vercel project's Settings → Environment Variables, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` with the real values from the user's Supabase project (created back in Task 15's follow-up). Redeploy after adding them.
+
+- [ ] **Step 4b: Set `metadataBase` now that the real production URL is known**
+
+Task 7's `app/layout.tsx` metadata was built without a `metadataBase`, which `next dev` warns about (`metadataBase property in metadata export is not set`) — without it, the OG image URL Next.js generates for `<meta property="og:image">` can resolve incorrectly once deployed, undermining the WhatsApp preview the brief calls out as the top priority. Add it once the Vercel URL (or custom domain) is confirmed:
+
+```tsx
+export const metadata: Metadata = {
+  metadataBase: new URL("https://<the-real-deployed-domain>"),
+  title,
+  description,
+  openGraph: { title, description, type: "website" },
+  twitter: { card: "summary_large_image", title, description },
+};
+```
+
+Commit:
+```bash
+git add app/layout.tsx
+git commit -m "fix: set metadataBase for correct OG image URL resolution in production"
+```
 
 - [ ] **Step 5: Verify the deployed OG preview**
 
