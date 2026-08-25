@@ -23,6 +23,7 @@ export function ScratchCard({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const hasScratched = useRef(false);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const reducedMotion = useReducedMotion();
   const [revealed, setRevealed] = useState(false);
   const [showHint, setShowHint] = useState(true);
@@ -38,6 +39,8 @@ export function ScratchCard({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    hasScratched.current = false;
+
     const dpr = window.devicePixelRatio || 1;
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -52,6 +55,16 @@ export function ScratchCard({
     ctx.textAlign = "center";
     ctx.fillText("Scratch to reveal", width / 2, height / 2);
 
+    // Percentage tracking reads from a small downsampled offscreen canvas
+    // rather than the full DPR-scaled buffer, so getImageData stays cheap
+    // (a few KB instead of several MB) even while actively dragging.
+    const sampleWidth = 96;
+    const sampleHeight = Math.max(1, Math.round(sampleWidth * (height / width)));
+    const sampleCanvas = document.createElement("canvas");
+    sampleCanvas.width = sampleWidth;
+    sampleCanvas.height = sampleHeight;
+    const sampleCtx = sampleCanvas.getContext("2d");
+
     const getPos = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
       return { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -65,11 +78,13 @@ export function ScratchCard({
     };
 
     const checkScratchedPercent = () => {
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      if (!sampleCtx) return;
+      sampleCtx.clearRect(0, 0, sampleWidth, sampleHeight);
+      sampleCtx.drawImage(canvas, 0, 0, sampleWidth, sampleHeight);
+      const imageData = sampleCtx.getImageData(0, 0, sampleWidth, sampleHeight).data;
       let transparent = 0;
       let total = 0;
-      const sampleStep = 32;
-      for (let i = 3; i < imageData.length; i += sampleStep) {
+      for (let i = 3; i < imageData.length; i += 4) {
         total++;
         if (imageData[i] === 0) transparent++;
       }
@@ -78,14 +93,20 @@ export function ScratchCard({
       }
     };
 
-    let checkInterval: ReturnType<typeof setInterval> | null = null;
+    const stopInterval = () => {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+    };
 
     const startDrawing = (e: PointerEvent) => {
       isDrawing.current = true;
+      canvas.setPointerCapture(e.pointerId);
       if (!hasScratched.current) {
         hasScratched.current = true;
         setShowHint(false);
-        checkInterval = setInterval(checkScratchedPercent, 400);
+        checkIntervalRef.current = setInterval(checkScratchedPercent, 400);
       }
       const { x, y } = getPos(e);
       scratch(x, y);
@@ -97,23 +118,37 @@ export function ScratchCard({
       scratch(x, y);
     };
 
-    const stopDrawing = () => {
+    const stopDrawing = (e: PointerEvent) => {
       isDrawing.current = false;
+      if (canvas.hasPointerCapture(e.pointerId)) {
+        canvas.releasePointerCapture(e.pointerId);
+      }
     };
 
     canvas.addEventListener("pointerdown", startDrawing);
     canvas.addEventListener("pointermove", draw);
     canvas.addEventListener("pointerup", stopDrawing);
-    canvas.addEventListener("pointerleave", stopDrawing);
+    canvas.addEventListener("pointercancel", stopDrawing);
 
     return () => {
       canvas.removeEventListener("pointerdown", startDrawing);
       canvas.removeEventListener("pointermove", draw);
       canvas.removeEventListener("pointerup", stopDrawing);
-      canvas.removeEventListener("pointerleave", stopDrawing);
-      if (checkInterval) clearInterval(checkInterval);
+      canvas.removeEventListener("pointercancel", stopDrawing);
+      stopInterval();
     };
   }, [width, height, revealThreshold, overlayColor, reducedMotion]);
+
+  useEffect(() => {
+    // The main effect's cleanup only fires on unmount or prop change, but on
+    // a single-page site this component stays mounted after being revealed —
+    // so stop polling scratched-percentage as soon as it's no longer needed,
+    // whether triggered by the threshold check or the manual Reveal button.
+    if (revealed && checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+  }, [revealed]);
 
   return (
     <div className={`relative select-none ${className}`} style={{ width, height }}>
@@ -126,6 +161,7 @@ export function ScratchCard({
             ref={canvasRef}
             className="absolute inset-0 touch-none rounded-2xl"
             style={{ width, height }}
+            aria-hidden="true"
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           />
@@ -144,6 +180,7 @@ export function ScratchCard({
         <button
           type="button"
           onClick={() => setRevealed(true)}
+          aria-label="Reveal hidden content"
           className="absolute bottom-3 right-3 rounded-full bg-maroon px-4 py-1.5 font-body text-xs uppercase tracking-widest text-ivory shadow"
         >
           Reveal
