@@ -5,7 +5,7 @@ import { Divider } from "@/components/primitives/Divider";
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-ivory px-6 text-center">
+    <section className="relative flex min-h-screen min-h-dvh flex-col items-center justify-center overflow-hidden bg-ivory px-6 text-center">
       <FloatingPetals />
       <div className="relative z-10">
         <EyebrowLabel>Together with their families</EyebrowLabel>
@@ -20,7 +20,7 @@ export function Hero() {
           {wedding.saveTheDate.dateRange}
         </p>
       </div>
-      <div className="absolute bottom-10 flex flex-col items-center gap-2 text-maroon/60">
+      <div className="absolute bottom-10 flex flex-col items-center gap-2 text-maroon/60" aria-hidden="true">
         <span className="font-body text-xs uppercase tracking-[0.3em]">Scroll</span>
         <span className="h-8 w-px bg-maroon/40" />
       </div>
