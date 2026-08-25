@@ -592,7 +592,7 @@ export function useReducedMotion(): boolean {
 
 ```tsx
 "use client";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
@@ -618,7 +618,11 @@ function generatePetals(count: number): Petal[] {
 
 export function FloatingPetals({ count = 18 }: { count?: number }) {
   const reducedMotion = useReducedMotion();
-  const petals = useMemo(() => generatePetals(count), [count]);
+  const [petals, setPetals] = useState<Petal[]>([]);
+
+  useEffect(() => {
+    setPetals(generatePetals(count));
+  }, [count]);
 
   if (reducedMotion) return null;
 
