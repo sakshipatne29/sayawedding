@@ -23,58 +23,88 @@ export interface WeddingConfig {
   primaryVenue: { name: string; address: string; mapEmbedUrl: string };
 }
 
+const VENUE_NAME = "The Grand Kasturi Resort";
+const VENUE_ADDRESS = "Katara, Bhopal, Madhya Pradesh";
+const VENUE_QUERY = encodeURIComponent(`${VENUE_NAME}, ${VENUE_ADDRESS}`);
+
 export const wedding: WeddingConfig = {
   couple: { bride: "Sakshi", groom: "Yash" },
   hashtag: "#SakshiWedsYash",
   saveTheDate: {
     headline: "We're Getting Married!",
-    dateRange: "December 4–6, 2026",
+    dateRange: "November 23–26, 2026",
   },
-  countdownTarget: "2026-12-04T10:00:00+05:30",
+  // Varmala & Pheras (the wedding ceremony itself) is the day the countdown
+  // builds to; the festivities proper start three days earlier with Mehendi.
+  countdownTarget: "2026-11-26T10:00:00+05:30",
   primaryVenue: {
-    name: "The Grand Ivory Lawns",
-    address: "14 Palm Grove Road, Alibaug, Maharashtra 402201",
-    mapEmbedUrl:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3768.0!2d72.87!3d18.64!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTjCsDM4JzI0LjAiTiA3MsKwNTInMTIuMCJF!5e0!3m2!1sen!2sin!4v1700000000000",
+    name: VENUE_NAME,
+    address: VENUE_ADDRESS,
+    // No Google API key in use, so this is the no-key embeddable form
+    // (https://www.google.com/maps?q=<query>&output=embed) rather than a
+    // hand-fabricated `pb=` parameter string, which doesn't actually work.
+    mapEmbedUrl: `https://www.google.com/maps?q=${VENUE_QUERY}&output=embed`,
   },
   ceremonies: [
     {
+      id: "mehendi",
+      name: "Mehendi",
+      tagline: "A little henna, a lot of laughter, and a lifetime of love to celebrate",
+      date: "2026-11-23",
+      startTime: "11:00 AM",
+      venueName: VENUE_NAME,
+      venueAddress: VENUE_ADDRESS,
+      mapUrl: `https://maps.google.com/?q=${VENUE_QUERY}`,
+      attire: "Green & yellow, casual traditional",
+      accentColor: "emerald",
+    },
+    {
       id: "haldi",
-      name: "Haldi Ceremony",
-      tagline: "A morning of turmeric, laughter, and yellow everything",
-      date: "2026-12-04",
-      startTime: "10:00 AM",
-      endTime: "1:00 PM",
-      venueName: "The Grand Ivory Lawns — Garden Pavilion",
-      venueAddress: "14 Palm Grove Road, Alibaug, Maharashtra 402201",
-      mapUrl: "https://maps.google.com/?q=The+Grand+Ivory+Lawns+Alibaug",
+      name: "Haldi Utsav",
+      tagline: "Let the haldi magic begin",
+      date: "2026-11-25",
+      startTime: "11:00 AM",
+      venueName: VENUE_NAME,
+      venueAddress: VENUE_ADDRESS,
+      mapUrl: `https://maps.google.com/?q=${VENUE_QUERY}`,
       attire: "Yellow & mustard, traditional",
       accentColor: "gold",
     },
     {
+      id: "sangeet",
+      name: "Sangeet Night",
+      tagline: "Every song tells a story, every dance makes a memory",
+      date: "2026-11-25",
+      startTime: "8:00 PM",
+      venueName: VENUE_NAME,
+      venueAddress: VENUE_ADDRESS,
+      mapUrl: `https://maps.google.com/?q=${VENUE_QUERY}`,
+      attire: "Festive, sparkly Indo-western",
+      accentColor: "navy",
+    },
+    {
       id: "wedding",
-      name: "Wedding Ceremony",
-      tagline: "Two families, one sacred fire",
-      date: "2026-12-05",
-      startTime: "7:00 PM",
-      endTime: "11:00 PM",
-      venueName: "The Grand Ivory Lawns — Main Mandap",
-      venueAddress: "14 Palm Grove Road, Alibaug, Maharashtra 402201",
-      mapUrl: "https://maps.google.com/?q=The+Grand+Ivory+Lawns+Alibaug",
+      name: "Varmala & Pheras",
+      tagline: "Two hearts, one promise, seven sacred steps",
+      date: "2026-11-26",
+      startTime: "10:00 AM",
+      venueName: VENUE_NAME,
+      venueAddress: VENUE_ADDRESS,
+      mapUrl: `https://maps.google.com/?q=${VENUE_QUERY}`,
       attire: "Traditional formal, maroon & gold encouraged",
       accentColor: "maroon",
     },
     {
       id: "reception",
-      name: "Reception",
-      tagline: "Dinner, dancing, and a toast to forever",
-      date: "2026-12-06",
+      name: "Wedding Reception",
+      tagline: "A new chapter, a beautiful beginning",
+      date: "2026-11-26",
       startTime: "8:00 PM",
-      venueName: "The Grand Ivory Lawns — Emerald Hall",
-      venueAddress: "14 Palm Grove Road, Alibaug, Maharashtra 402201",
-      mapUrl: "https://maps.google.com/?q=The+Grand+Ivory+Lawns+Alibaug",
+      venueName: VENUE_NAME,
+      venueAddress: VENUE_ADDRESS,
+      mapUrl: `https://maps.google.com/?q=${VENUE_QUERY}`,
       attire: "Cocktail / Indo-western formal",
-      accentColor: "emerald",
+      accentColor: "navy",
     },
   ],
 };
