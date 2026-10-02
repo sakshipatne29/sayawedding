@@ -1,6 +1,7 @@
 import { Hero } from "@/components/Hero";
 import { Countdown } from "@/components/Countdown";
 import { SaveTheDate } from "@/components/SaveTheDate";
+import { Timeline } from "@/components/Timeline";
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
       <Hero />
       <Countdown />
       <SaveTheDate />
+      <Timeline />
     </main>
   );
 }
