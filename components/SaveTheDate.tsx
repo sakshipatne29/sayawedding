@@ -9,10 +9,11 @@ export function SaveTheDate() {
       <EyebrowLabel>A little surprise</EyebrowLabel>
       <h2 className="mt-4 font-display text-3xl italic text-maroon">Save the Date</h2>
       <div className="mt-8">
-        <ScratchCard>
+        <ScratchCard cardClassName="bg-[#D7263D]" overlayColor={["#FDE2EA", "#F7B6CB", "#F29AB8"]}
+          overlayTextColor="#8A2E52">
           <div>
-            <p className="font-display text-2xl italic text-maroon">{wedding.saveTheDate.headline}</p>
-            <p className="mt-3 font-body text-lg text-ink/80">{wedding.saveTheDate.dateRange}</p>
+            <p className="font-display text-3xl italic text-white">{wedding.saveTheDate.headline}</p>
+            <p className="mt-4 font-body text-lg text-white">{wedding.saveTheDate.weddingDay}</p>
           </div>
         </ScratchCard>
       </div>

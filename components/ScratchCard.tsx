@@ -8,8 +8,11 @@ interface ScratchCardProps {
   width?: number;
   height?: number;
   revealThreshold?: number;
-  overlayColor?: string;
+  // One colour, or several to draw a diagonal gradient (top-left to bottom-right).
+  overlayColor?: string | readonly string[];
+  overlayTextColor?: string; // colour of the "Scratch to reveal" prompt
   className?: string;
+  cardClassName?: string;
 }
 
 export function ScratchCard({
@@ -18,7 +21,9 @@ export function ScratchCard({
   height = 400,
   revealThreshold = 0.55,
   overlayColor = "#C9962F",
+  overlayTextColor = "rgba(255,255,255,0.85)",
   className = "",
+  cardClassName = "bg-ivory",
 }: ScratchCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
@@ -27,6 +32,9 @@ export function ScratchCard({
   const reducedMotion = useReducedMotion();
   const [revealed, setRevealed] = useState(false);
   const [showHint, setShowHint] = useState(true);
+  // A string key, so a gradient passed as a fresh array each render doesn't
+  // redraw the overlay (and wipe the guest's scratching) on every render.
+  const overlayKey = typeof overlayColor === "string" ? overlayColor : overlayColor.join(",");
 
   useEffect(() => {
     if (reducedMotion) {
@@ -56,10 +64,17 @@ export function ScratchCard({
     canvas.style.height = `${renderHeight}px`;
     ctx.scale(dpr, dpr);
 
-    ctx.fillStyle = overlayColor;
+    const stops = overlayKey.split(",");
+    if (stops.length === 1) {
+      ctx.fillStyle = stops[0];
+    } else {
+      const gradient = ctx.createLinearGradient(0, 0, renderWidth, renderHeight);
+      stops.forEach((color, i) => gradient.addColorStop(i / (stops.length - 1), color));
+      ctx.fillStyle = gradient;
+    }
     ctx.fillRect(0, 0, renderWidth, renderHeight);
     ctx.font = "600 16px Jost, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillStyle = overlayTextColor;
     ctx.textAlign = "center";
     ctx.fillText("Scratch to reveal", renderWidth / 2, renderHeight / 2);
 
@@ -145,7 +160,7 @@ export function ScratchCard({
       canvas.removeEventListener("pointercancel", stopDrawing);
       stopInterval();
     };
-  }, [width, height, revealThreshold, overlayColor, reducedMotion]);
+  }, [width, height, revealThreshold, overlayKey, overlayTextColor, reducedMotion]);
 
   useEffect(() => {
     // The main effect's cleanup only fires on unmount or prop change, but on
@@ -163,14 +178,14 @@ export function ScratchCard({
       className={`relative select-none ${className}`}
       style={{ width, maxWidth: "100%", aspectRatio: `${width} / ${height}` }}
     >
-      <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-ivory p-6 text-center shadow-lg">
+      <div className={`absolute inset-0 flex items-center justify-center rounded-2xl p-6 text-center shadow-lg ${cardClassName}`}>
         {children}
       </div>
       <AnimatePresence>
         {!revealed && (
           <motion.canvas
             ref={canvasRef}
-            className="absolute inset-0 touch-none rounded-2xl"
+            className="absolute inset-0 h-full w-full touch-none rounded-2xl"
             aria-hidden="true"
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.5, ease: "easeOut" }}

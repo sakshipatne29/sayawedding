@@ -783,9 +783,7 @@ export function Hero() {
       <FloatingPetals />
       <div className="relative z-10">
         <EyebrowLabel>Together with their families</EyebrowLabel>
-        <p className="mt-6 font-display text-3xl text-gold" aria-hidden="true">
-          ✦ S ♥ Y ✦
-        </p>
+      
         <h1 className="mt-4 font-display text-5xl italic text-maroon md:text-7xl">
           {wedding.couple.bride} &amp; {wedding.couple.groom}
         </h1>

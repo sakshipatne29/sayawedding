@@ -32,3 +32,8 @@ h1, h2, h3 {
     scroll-behavior: auto;
   }
 }
+
+/* Set before first paint by the inline script in app/layout.tsx. */
+html[data-opened] [data-invite-welcome] {
+  display: none;
+}
