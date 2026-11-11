@@ -35,8 +35,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title,
   description,
-  openGraph: { title, description, type: "website" },
-  twitter: { card: "summary_large_image", title, description },
+  // Tab icons come from app/icon.png and app/apple-icon.png.
+  openGraph: {
+    title,
+    description,
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: title }],
+  },
+  twitter: { card: "summary_large_image", title, description, images: ["/og-image.png"] },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
