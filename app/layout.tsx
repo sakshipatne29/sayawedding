@@ -23,7 +23,7 @@ const dancingScript = Dancing_Script({
   variable: "--font-script",
 });
 
-const title = `${wedding.couple.bride} & ${wedding.couple.groom} are getting married`;
+const title = `${wedding.couple.bride} & ${wedding.couple.groom} · Wedding Invitation`;
 const description = `Join us to celebrate ${wedding.couple.bride} and ${wedding.couple.groom} — ${wedding.saveTheDate.dateRange}. ${wedding.hashtag}`;
 
 // Link previews (WhatsApp etc.) need an absolute image URL. Vercel sets this at build time.
